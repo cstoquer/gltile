@@ -1,0 +1,19 @@
+precision mediump float; // ???
+
+// varying vec3 vColor; // varying comes from vertex shader (declared with same name)
+varying vec2 v_uv;
+
+uniform sampler2D u_texture;
+uniform sampler2D u_palette;
+uniform float     u_palIndex;
+
+void main(void) {
+	//----------------------------------------------------------
+	// gl_FragColor = vec4(vColor, 1.0);
+	// gl_FragColor = color.gbra; // swap color composante
+
+	//----------------------------------------------------------
+	vec4 color = texture2D(u_texture, v_uv);
+	if (color.a == 0.0) discard;
+	gl_FragColor = texture2D(u_palette, vec2(color.g, u_palIndex));
+}

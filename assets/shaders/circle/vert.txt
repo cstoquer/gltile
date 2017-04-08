@@ -1,0 +1,8 @@
+attribute vec4  a_coordinates;
+// attribute vec3 color;
+varying   vec2 v_uv;
+
+void main(void) {
+    gl_Position = vec4(a_coordinates.x, a_coordinates.y, 0.0, 1.0);
+    v_uv = vec2(a_coordinates.z, a_coordinates.w);
+}

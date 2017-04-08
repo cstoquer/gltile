@@ -1,0 +1,27 @@
+/* 
+ * attribute: hold input values of the vertex shader program. 
+ *            point to the vertex buffer objects that contains per-vertex data. 
+ *            Each time the vertex shader is invoked, the attributes point to VBO of different vertices.
+ *
+ * uniform:   hold the input data that is common for both vertex and fragment shaders,
+ *            such as light position, texture coordinates, and color.
+ *
+ * varying:   used to pass the data from the vertex shader to the fragment shader
+ */
+
+attribute vec2  a_coordinates; // attribute data comes from javascript
+attribute float a_sprite;
+// attribute vec3 color;
+
+// varying   vec3 vColor; // varying data to be passed to the fragment shader
+varying   vec2 v_uv;
+
+void main(void) {
+    gl_Position = vec4(a_coordinates.x / 8.0 - 1.0, a_coordinates.y / 8.0 + 1.0, 0.0, 1.0);
+    // vColor = color;
+
+    // calculate uv coordinates from sprite index
+    float uvy = floor(a_sprite / 16.0);
+    float uvx = a_sprite - uvy * 16.0;
+    v_uv = vec2(uvx / 16.0, 1.0 - uvy / 16.0);
+}
