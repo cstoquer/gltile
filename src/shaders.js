@@ -37,6 +37,8 @@ for (var id in assets.shaders) {
 	programs[id] = createProgram(shader.vert, shader.frag);
 }
 
+// programs.plainColor = createProgram(assets.shaders.plainColor.vert, assets.shaders.plainColor.frag);
+
 //▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
 module.exports = programs;
 // window.programs = programs;

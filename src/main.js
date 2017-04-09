@@ -3,8 +3,7 @@ var TileMap = require('./TileMapGL');
 var shaders = require('./shaders');
 
 //▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
-var map = getMap('map');
-map.createVertex();
+
 
 //-----------------------------------------------------
 // ====> to change texture slot (unit) to use
@@ -52,6 +51,16 @@ map.createVertex();
 // 	1.0, 1.0, 0.0,
 // ];
 
+var map = getMap('map');
+map.createVertex();
+
+
+// gl.clearColor(0.4, 0.4, 0.4, 1.0);
+// gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+// $screen.triangle();
+
+// return;
+
 //▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
 // Update is called once per frame
 exports.update = function () {
@@ -64,7 +73,10 @@ exports.update = function () {
 		if (map.paletteIndex > 1) map.paletteIndex -= 1;
 	}
 
-	// $screen.draw({ w: 30, h: 30 }, 0, 0);
+	$screen.circle(3, 5, 120, 100);
+	// $screen.triangle();
+
+	// $screen.draw({ width: 30, height: 30 }, 0, 0);
 
 	// Now we can tell WebGL to draw the 6 points that make up the triangles
 	// webGL draw with the vertices

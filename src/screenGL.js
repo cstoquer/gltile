@@ -82,10 +82,36 @@ function GlScreen() {
 
 GlScreen.prototype.useProgram = function (program) {
 	// don't call if it same program as previous draw call
-	if (this.program === program) return;
+	if (this.program === program) return program;
+
+	if (this.program !== null) {
+		// switch attributes
+
+		// Gets the number of attributes in the current and new programs
+		var currentAttributes = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
+		var newAttributes     = gl.getProgramParameter(program,      gl.ACTIVE_ATTRIBUTES);
+
+		// Fortunately, in OpenGL, attribute index values are always assigned in the
+		// range [0, ..., NUMBER_OF_VERTEX_ATTRIBUTES - 1], so we can use that to
+		// enable or disable attributes
+		if (newAttributes > currentAttributes) {
+			// We need to enable the missing attributes
+			for (var i = currentAttributes; i < newAttributes; i++) {
+				gl.enableVertexAttribArray(i);
+			}
+		} else if (newAttributes < currentAttributes) {
+			// We need to disable the extra attributes
+			for (var i = newAttributes; i < currentAttributes; i++) {
+				gl.disableVertexAttribArray(i);
+			}
+		}
+	}
+
+	// switch program
 	this.program = program;
-	// Tell WebGL to use this program
 	gl.useProgram(program);
+
+	return program;
 };
 
 GlScreen.prototype.bindTexture = function (image, unit) {
@@ -101,48 +127,87 @@ GlScreen.prototype.bindTexture = function (image, unit) {
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 };
 
-GlScreen.prototype.draw = function (image, x, y) {
-	var w = image.width;
-	var h = image.height;
+//▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+GlScreen.prototype.circle = function (x, y, w, h) {
+	// var w = image.width;
+	// var h = image.height;
 
 	var program = require('./shaders').circle;
 	this.useProgram(program);
 
-	var float32View = new Float32Array([
+	var itemSize = 4;
+
+	var vertex = [
 		2 * x / SCREEN_WIDTH  - 1,
 		2 * y / SCREEN_HEIGHT - 1,
-		0.0, 0.0,
+		0.0,
+		0.0,
 
 		2 * (x + w) / SCREEN_WIDTH  - 1,
 		2 * y / SCREEN_HEIGHT - 1,
-		1.0, 0.0,
+		1.0,
+		0.0,
 
 		2 * (x + w) / SCREEN_WIDTH  - 1,
 		2 * (y + h) / SCREEN_HEIGHT - 1,
-		1.0, 1.0,
+		1.0,
+		1.0,
 
 		2 * x / SCREEN_WIDTH  - 1,
 		2 * (y + h) / SCREEN_HEIGHT - 1,
-		0.0, 1.0,
-	]);
+		0.0,
+		1.0,
+	];
 
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-	gl.bufferData(gl.ARRAY_BUFFER, float32View, gl.STATIC_DRAW);
+	var vertexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertex), gl.STATIC_DRAW);
 	var location = gl.getAttribLocation(program, 'a_coordinates');
-	gl.vertexAttribPointer(location, 4, gl.FLOAT, false, FLOAT32_SIZE * 16, 0);
+	gl.enableVertexAttribArray(location);
+	gl.vertexAttribPointer(location, itemSize, gl.FLOAT, false, FLOAT32_SIZE * itemSize, 0);
 
 
-	var indexes = new Uint16Array([0, 1, 3, 3, 1, 2]);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer());
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexes, gl.STATIC_DRAW);
+	var indices = [0, 1, 3, 3, 1, 2];
+	var numItems = 6;
+
+	var indexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
 	gl.drawElements(
 		gl.TRIANGLES, //enum mode,  // POINTS, LINE_STRIP, LINE_LOOP, LINES, TRIANGLE_STRIP, TRIANGLE_FAN, TRIANGLES
-		6, //long count, // This option specifies the number of elements to be rendered
-		gl.UNSIGNED_BYTE, //enum type,  // This option specifies the data type of the indices which must be UNSIGNED_BYTE or UNSIGNED_SHORT
+		numItems, //long count, // This option specifies the number of elements to be rendered
+		gl.UNSIGNED_SHORT, //enum type,  // This option specifies the data type of the indices which must be UNSIGNED_BYTE or UNSIGNED_SHORT
 		0 //long offset // This option specifies the starting point for rendering
 	);
+};
+
+//▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+GlScreen.prototype.triangle = function () {
+	var program = require('./shaders').plainColor;
+	this.useProgram(program);
+
+	var itemSize = 2;
+	var numItems = 3;
+
+	var vertex = [
+		 0.0,  1.0,
+		-1.0, -1.0,
+		 1.0, -1.0,
+	];
+
+	var vertexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertex), gl.STATIC_DRAW);
+
+
+	var location = gl.getAttribLocation(program, 'a_coordinates');
+	gl.enableVertexAttribArray(location);
+
+	gl.vertexAttribPointer(location, itemSize, gl.FLOAT, false, FLOAT32_SIZE * itemSize, 0);
+
+	gl.drawArrays(gl.TRIANGLES, 0, numItems);
 };
 
 

@@ -107,23 +107,22 @@ TileMapGL.prototype.createVertex = function () {
 
 	this.bufferLength = vertex.length / VERTEX_SIZE;
 	this.vertexBuffer = createGlBuffer(vertexBuffer);
-
-	var program = shaders.tilemap;
-	// TODO: should we do bindBuffer at each draw call ?
-	this._coordLocation  = bindBuffer(program, this.vertexBuffer, 'a_coordinates');
-	this._spriteLocation = bindBuffer(program, this.vertexBuffer, 'a_sprite');
 };
 
 //▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
 TileMapGL.prototype.renderGL = function () {
 	//-------------------------------------------------------------------------
 	// SET PROGRAM TO USE
-	$screen.useProgram(shaders.tilemap);
+	var program = $screen.useProgram(shaders.tilemap);
 
 	//-------------------------------------------------------------------------
 	// BIND BUFFERS
-	gl.vertexAttribPointer(this._coordLocation,  2, gl.FLOAT, false, FLOAT32_SIZE * VERTEX_SIZE, 0);
-	gl.vertexAttribPointer(this._spriteLocation, 1, gl.FLOAT, false, FLOAT32_SIZE * VERTEX_SIZE, FLOAT32_SIZE * 2);
+	// TODO: bindBuffer needs to be done at each draw call only if program changed ?
+	var coordLocation  = bindBuffer(program, this.vertexBuffer, 'a_coordinates');
+	var spriteLocation = bindBuffer(program, this.vertexBuffer, 'a_sprite');
+
+	gl.vertexAttribPointer(coordLocation,  2, gl.FLOAT, false, FLOAT32_SIZE * VERTEX_SIZE, 0);
+	gl.vertexAttribPointer(spriteLocation, 1, gl.FLOAT, false, FLOAT32_SIZE * VERTEX_SIZE, FLOAT32_SIZE * 2);
 
 	//-------------------------------------------------------------------------
 	// BIND TEXTURES

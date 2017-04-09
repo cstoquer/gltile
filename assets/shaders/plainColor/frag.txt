@@ -1,13 +1,7 @@
 precision mediump float; // ???
 
 // varying vec3 vColor; // varying comes from vertex shader (declared with same name)
-varying vec2 v_uv;
-
 
 void main(void) {
-	float x = 2.0 * v_uv.x - 1.0;
-	float y = 2.0 * v_uv.y - 1.0;
-	// bool outside = x * x + y * y > 1.0;
-	if (x * x + y * y > 1.0) discard;
 	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
