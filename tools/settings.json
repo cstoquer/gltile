@@ -12,18 +12,18 @@
 		"mapEditor": {
 			"x": 176,
 			"y": 25,
-			"viewW": 172,
-			"viewH": 170
+			"viewW": 165,
+			"viewH": 142
 		},
 		"tilesheet": {
-			"x": 692,
-			"y": 32,
+			"x": 601,
+			"y": 25,
 			"viewW": 0,
 			"viewH": 0
 		},
 		"customTools": {
-			"x": 805,
-			"y": 489,
+			"x": 821,
+			"y": 438,
 			"viewW": 165,
 			"viewH": 100,
 			"foldConfig": {
@@ -32,7 +32,7 @@
 		},
 		"palette": {
 			"x": 0,
-			"y": 419,
+			"y": 378,
 			"viewW": 0,
 			"viewH": 0
 		}

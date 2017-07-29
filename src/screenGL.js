@@ -35,6 +35,31 @@ gl.depthMask(false);
 // gl.depthFunc(gl.LEQUAL);
 
 //▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+function addInspector() {
+	var daCount = 0;
+	var deCount = 0;
+
+	var l = 0;
+
+	gl._drawArrays   = gl.drawArrays;
+	gl._drawElements = gl.drawElements;
+
+	gl.drawArray = function (mode, first, count) {
+		daCount += 1;
+		gl._drawArrays(mode, first, count);
+		if (++l % 100 === 0) console.log('drawArray', daCount);
+	}
+
+	gl.drawElements = function (mode, count, type, offset) {
+		deCount += 1;
+		gl._drawElements(mode, count, type, offset);
+		if (++l % 100 === 0) console.log('drawElements', deCount);
+	}
+}
+
+// addInspector();
+
+//▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
 var DUMMY_PROGRAM = null; // TODO
 
 function createTexture(image) {
@@ -125,6 +150,103 @@ GlScreen.prototype.bindTexture = function (image, unit) {
 	// numbered from TEXTURE0 to TEXTURExx
 	gl.activeTexture(gl.TEXTURE0 + unit); // set current slot (unit)
 	gl.bindTexture(gl.TEXTURE_2D, texture);
+};
+
+//▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+GlScreen.prototype.draw = function (image, x, y) {
+	var w = image.width;
+	var h = image.height;
+
+	var program = require('./shaders').sprite;
+	this.useProgram(program);
+
+	var itemSize = 4;
+
+	var vertex = [
+		2 * x / SCREEN_WIDTH  - 1,
+		2 * y / SCREEN_HEIGHT - 1,
+		0.0, // u
+		0.0, // v
+
+		2 * (x + w) / SCREEN_WIDTH  - 1,
+		2 * y / SCREEN_HEIGHT - 1,
+		1.0, // u
+		0.0, // v
+
+		2 * (x + w) / SCREEN_WIDTH  - 1,
+		2 * (y + h) / SCREEN_HEIGHT - 1,
+		1.0, // u
+		1.0, // v
+
+		2 * x / SCREEN_WIDTH  - 1,
+		2 * (y + h) / SCREEN_HEIGHT - 1,
+		0.0, // u
+		1.0, // v
+	];
+
+
+	var vertexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertex), gl.STATIC_DRAW);
+	var location = gl.getAttribLocation(program, 'a_coordinates');
+	gl.enableVertexAttribArray(location);
+	gl.vertexAttribPointer(location, itemSize, gl.FLOAT, false, FLOAT32_SIZE * itemSize, 0);
+
+
+	var indices = [0, 1, 3, 3, 1, 2];
+	var numItems = 6;
+
+	var indexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+
+	//-------------------------------------------------------------------------
+	// BIND TEXTURES
+	$screen.bindTexture(image, 0); // TODO: default tilesheet
+
+	// set shader uniform pointer to texture 
+	var textureLocation = gl.getUniformLocation(program, 'u_texture');
+	gl.uniform1i(textureLocation, 0); // 0 is texture slot
+
+	//-------------------------------------------------------------------------
+	gl.drawElements(
+		gl.TRIANGLES, //enum mode,  // POINTS, LINE_STRIP, LINE_LOOP, LINES, TRIANGLE_STRIP, TRIANGLE_FAN, TRIANGLES
+		numItems, //long count, // This option specifies the number of elements to be rendered
+		gl.UNSIGNED_SHORT, //enum type,  // This option specifies the data type of the indices which must be UNSIGNED_BYTE or UNSIGNED_SHORT
+		0 //long offset // This option specifies the starting point for rendering
+	);
+};
+
+//▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+GlScreen.prototype.tiles = function (image, positions) {
+	var program = require('./shaders').tilepoint;
+	this.useProgram(program);
+
+	var count = positions.length;
+	var itemSize = 2; // number per vertex
+	var vertex = new Float32Array(count * 2);
+	for (var i = 0; i < count; i++) {
+		vertex[i * 2]     = positions[i].x;
+		vertex[i * 2 + 1] = positions[i].y;
+	}
+
+	var vertexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, vertex, gl.STATIC_DRAW);
+	var location = gl.getAttribLocation(program, 'a_coordinates');
+	gl.enableVertexAttribArray(location);
+	gl.vertexAttribPointer(location, itemSize, gl.FLOAT, false, FLOAT32_SIZE * itemSize, 0);
+
+	//-------------------------------------------------------------------------
+	// BIND TEXTURES
+	$screen.bindTexture(image, 0);
+
+	// set shader uniform pointer to texture 
+	var textureLocation = gl.getUniformLocation(program, 'u_texture');
+	gl.uniform1i(textureLocation, 0); // 0 is texture slot
+
+	//-------------------------------------------------------------------------
+	gl.drawArrays(gl.POINTS, 0, count);
 };
 
 //▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄

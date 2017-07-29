@@ -17,6 +17,7 @@ function createGlBuffer(vertexBuffer) {
 	// gl.STATIC_DRAW  − Data will be specified once and used many times.
 	// gl.STREAM_DRAW  − Data will be specified once and used a few times.
 	// gl.DYNAMIC_DRAW − Data will be specified repeatedly and used many times.
+	// it doesn't seem to have impacts on performances
 	gl.bufferData(gl.ARRAY_BUFFER, vertexBuffer, gl.STATIC_DRAW);
 
 	// Int8Array, Uint8Array, Int16Array, Uint16Array, Int32Array, UInt32Array, Float32Array, Float64Array
